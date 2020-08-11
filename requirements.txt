@@ -1,0 +1,7 @@
+cryptography
+django
+djangorestframework
+PyGithub
+pyjwt
+requests
+travispy

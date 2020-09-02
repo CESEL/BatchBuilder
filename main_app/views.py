@@ -38,6 +38,8 @@ class GithubView(APIView):
         if not head_commit:
             return HttpResponse(status=204)
 
+        # todo: check for API changes
+
         # authenticate
         installation_id = request.data['installation']['id']
         token = generate_installation_token(installation_id)

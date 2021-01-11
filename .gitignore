@@ -133,3 +133,5 @@ db.sqlite3
 .pyre/
 
 batchbuilder.private-key.pem
+batchbuilderdraft.private-key.pem
+

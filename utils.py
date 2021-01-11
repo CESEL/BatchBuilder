@@ -1,7 +1,12 @@
 from datetime import timedelta, datetime
+from time import sleep
 
 import jwt
 import requests
+
+from django.conf import settings
+
+from main_app.models import Build
 
 
 def generate_app_token():
@@ -11,10 +16,12 @@ def generate_app_token():
         # JWT expiration time (10 minute maximum)
         'exp': int((datetime.now() + timedelta(minutes=10)).timestamp()),
         # GitHub App's identifier
-        'iss': 73186
+        # 'iss': 73186
+        'iss': settings.GITHUB_APP_ID
     }
 
-    key = open('batchbuilder.private-key.pem').read()
+    # key = open('batchbuilder.private-key.pem').read()
+    key = open(settings.GITHUB_APP_PRIVATE_KEY_PATH).read()
 
     token = jwt.encode(payload, key, 'RS256')
 
@@ -59,7 +66,6 @@ def read_config_file(repo):
 
 def get_batch_status(repo, token):
     url = f'https://api.github.com/repos/{repo.owner.login}/{repo.name}/commits/batch/check-runs'
-    print(url)
 
     response = requests.get(
         url,
@@ -68,20 +74,33 @@ def get_batch_status(repo, token):
             'Authorization': f'Bearer {token}'
         })
 
-    print(response.json()['check_runs'][0]['conclusion'])
+    if response.json()['check_runs'] and response.json()['check_runs'][0]['conclusion']:
+        return response.json()['check_runs'][0]
 
 
-def set_master_status(repo, token):
-    url = f'https://api.github.com/repos/{repo.owner.login}/{repo.name}/commits/b2df1bd35ce21bb07feabfde4eb91301c5cf5967/check-runs'
-    print(url)
+def set_master_status(repo, token, check_run):
+    url = f'https://api.github.com/repos/{repo.owner.login}/{repo.name}/check-runs'
 
-    response = requests.post(
-        url,
-        headers={
-            'Accept': 'application/vnd.github.antiope-preview+json',
-            'Authorization': f'Bearer {token}'
-        })
+    for build in Build.objects.filter(repo_id=repo.id):
+        response = requests.post(
+            url,
+            json={
+                'name': check_run['name'],
+                'head_sha': build.head_commit,
+                'details_url': check_run['details_url'],
+                'external_id': check_run['external_id'],
+                'status': check_run['status'],
+                'started_at': check_run['started_at'],
+                'conclusion': check_run['conclusion'],
+                'completed_at': check_run['completed_at'],
+                'output': check_run['output'],
+            },
+            headers={
+                'Accept': 'application/vnd.github.antiope-preview+json',
+                'Authorization': f'Bearer {token}'
+            })
 
-    print(response.json()['check_runs'][0]['conclusion'])
+        if response.status_code == 201:
+            build.delete()
 
-    # return response.json()['token']
+        sleep(1)

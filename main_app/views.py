@@ -9,7 +9,7 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 
 from main_app.models import Build
-from utils import generate_installation_token, read_config_file, get_batch_status
+from utils import generate_installation_token, read_config_file, get_batch_status, set_master_status
 
 
 def home(request):
@@ -18,12 +18,15 @@ def home(request):
 
 def check_batch_status(repo, token):
     while True:
-        status = get_batch_status(repo, token)
+        check_run = get_batch_status(repo, token)
 
-        if not status:
+        if check_run is None:
+            sleep(5)
+            continue
+        else:
+            # update master branch status
+            set_master_status(repo, token, check_run)
             break
-
-        sleep(5)
 
 
 class GithubView(APIView):
@@ -33,12 +36,16 @@ class GithubView(APIView):
     def post(self, request):
         print(request.data)
 
+        if 'ref' not in request.data:
+            return HttpResponse(status=204)
+
+        if request.data['ref'] == 'refs/heads/batch':
+            return HttpResponse(status=204)
+
         head_commit = request.data['head_commit']['id']
 
         if not head_commit:
             return HttpResponse(status=204)
-
-        # todo: check for API changes
 
         # authenticate
         installation_id = request.data['installation']['id']
@@ -73,11 +80,8 @@ class GithubView(APIView):
                 build.is_merged = True
                 build.save()
 
-        # checking Travis build status in a separated thread
-        t = Thread(target=check_batch_status, args=(repo, token))
-        t.start()
-
-        # update status
-
+            # checking Travis build status in a separated thread
+            t = Thread(target=check_batch_status, args=(repo, token))
+            t.start()
 
         return HttpResponse(request.data)

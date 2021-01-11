@@ -118,3 +118,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 GITHUB_SECRET = 'kjdbhfglkjb8765KJHVGJK8dvghl'
+GITHUB_APP_ID = 80715
+# GITHUB_APP_ID = 73186
+# GITHUB_APP_PRIVATE_KEY_PATH = 'batchbuilder.private-key.pem'
+GITHUB_APP_PRIVATE_KEY_PATH = 'batchbuilderdraft.private-key.pem'

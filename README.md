@@ -42,7 +42,7 @@ A database keeps track of submitted changes for each project. When the batch is 
 (is reached to required size), the changes are merged together and pushed to "batch" branch.
 This branch is tested on Travis CI. 
 
-###Workflow
+### Workflow
 - Extract installation ID of the project.
 - Generate a JWT token and authenticate.
 - Create "batch" branch if does not exist.
@@ -63,7 +63,7 @@ This branch is tested on Travis CI.
 - pull requests: read & write
 
 
-###Run and Configure Django App
+### Run and Configure Django App
 - Create a python virtual environment
 - Install requirements
 - `python manage.py migrate`

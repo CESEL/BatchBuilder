@@ -8,7 +8,7 @@ If all builds are successful, the status of all commits in the batch is set to "
 Otherwise, bisection is performed until the failure(s) is isolated. 
 In this case the status of each commit is set individually. 
 
-##Getting started
+## Getting started
 1. Visit https://github.com/apps/batchbuilder and click "Configure"
 
 2. Select desired repositories
@@ -35,7 +35,7 @@ __Note__: By default, only commits to master branch is going to be tested.
 
 
 
-##Development
+## Development
 This repository contains the required files to run a Django application that waits for API calls from GitHub.
 After each change on the master branch, an HTTP POST request is sent by GitHub to this app. 
 A database keeps track of submitted changes for each project. When the batch is ready to test on Travis CI 
